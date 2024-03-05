@@ -1,17 +1,28 @@
-import requests
-import pandas as pd
-from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from bs4 import BeautifulSoup
 
 driver = webdriver.Chrome()
-website = 'https://medicalfuturist.com/magazine'
-driver.get(website)
 
 url = 'https://medicalfuturist.com/magazine'
-page = requests.get(url)
-soup = BeautifulSoup(page.text, 'html.parser')
-articles = soup.find_all('section', id='main-section')
-#for article in articles:
-#    article_list = article.find('div', class_='row post-list')
-#    content = article_list.find('div', class_='col-md-3 item ')
-#    print(content)
+driver.get(url)
+
+# Wait for the content to load (you may need to adjust the timeout)
+wait = WebDriverWait(driver, 10)
+wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'row.post-list')))
+
+html_content = driver.page_source
+soup = BeautifulSoup(html_content, 'html.parser')
+
+articles = soup.find('div', class_='row post-list').find_all('div', class_='col-md-3 item')
+
+for article in range(1):
+    title = articles[article].find('h3', class_='title no-border')
+    link = articles[article].find('a')['href']
+    print("Title: " + title.text)
+    print("Link: " + link)
+
+# Close the Selenium webdriver
+driver.quit()
