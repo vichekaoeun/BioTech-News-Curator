@@ -5,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
 import os
+import csv
 
 def get_article():
     try:
@@ -21,17 +22,18 @@ def get_article():
 
         articles = soup.find('div', class_='row post-list').find_all('div', class_='col-md-3 item')
 
-        keyword_filter = input('Filter by keyword (MedicalFuturist): ')
-        print('Filtering out... ' + keyword_filter + '\n')
+        article_data = []
 
         for index, article in enumerate(articles):
             title = article.find('h3', class_='title no-border').text
             link = article.find('a')['href']
-            if keyword_filter.lower() in title.lower():
-                with open(f'scrapped_articles/MedicalFuturist_{title}.txt', 'a') as f:
-                    f.write("Title: " + title + "\n")
-                    f.write("Link: " + link + "\n")
-                print(f'File saved: {index}')
+            date = 'N/A'
+            author = 'N/A'
+            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
+            print(f'File saved: {index}')
+    
+        return article_data
+    
     finally:
         # Close the Selenium webdriver
         driver.quit()
@@ -49,14 +51,18 @@ def get_article_medEU():
         soup = BeautifulSoup(html_content, 'html.parser')
         articles = soup.find_all('div', class_='posts__list-item')
         
+        article_data = []
+        
         for index, article in enumerate(articles):
             title = article.find('h2').text
             link = article.find('a')['href']
             date = article.find('p').text
-            with open(f'scrapped_articles/MedTechEurope_{title}.txt', 'a') as f:
-                f.write("Title: " + title + "\n")
-                f.write("Link: " + link + "\n")
-                f.write("Date: " + date + "\n")
+            author = 'N/A'
+            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
+            print(f'File saved: {index}')
+            
+        return article_data
+        
     finally:
         driver.quit()
 
@@ -73,14 +79,18 @@ def get_article_statnews():
         soup = BeautifulSoup(html_content, 'html.parser')
         articles = soup.find_all('article', class_="topic-block__preview topic-block__preview--basic plus")
         
+        article_data = []
+        
         for index, article in enumerate(articles):
             title = article.find('a', class_='topic-block__preview-title').text.strip()
             link = article.find('a')['href']
             author = article.find('a', class_='author-name-link author-name author-main').text
-            with open(f'scrapped_articles/StatNews_{title}.txt', 'a') as f:
-                    f.write("Title: " + title + "\n")
-                    f.write("Link: " + link + "\n") 
-                    f.write("Author: " + author + "\n")
+            date = 'N/A'
+            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
+            print(f'File saved: {index}')
+            
+        return article_data
+        
     finally:
         driver.quit()
 
@@ -90,13 +100,24 @@ def clear_folder(folder_path):
         file_path = os.path.join(folder_path, file_name)
         if os.path.isfile(file_path):
             os.remove(file_path)
+            
+def export_to_csv(data, filename):
+    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = data[0].keys() if data else []
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
 
 if __name__ == '__main__':
     while True:
         clear_folder('./scrapped_articles')
-        get_article()
-        get_article_medEU()
-        get_article_statnews()
+        article_data = get_article()
+        article_medEU_data = get_article_medEU()
+        article_statnews_data = get_article_statnews()
+
+        all_data = article_data + article_medEU_data + article_statnews_data
+        export_to_csv(all_data, 'articles.csv')
         time_wait = 1
         print(f"Waiting...{time_wait} minutes")
         time.sleep(time_wait * 60)
