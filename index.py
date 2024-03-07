@@ -4,6 +4,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import time
+import os
 
 def get_article():
     try:
@@ -27,7 +28,7 @@ def get_article():
             title = article.find('h3', class_='title no-border').text
             link = article.find('a')['href']
             if keyword_filter.lower() in title.lower():
-                with open(f'scrapped_articles/{index}.txt', 'w') as f:
+                with open(f'scrapped_articles/MedicalFuturist_{title}.txt', 'a') as f:
                     f.write("Title: " + title + "\n")
                     f.write("Link: " + link + "\n")
                 print(f'File saved: {index}')
@@ -52,7 +53,7 @@ def get_article_medEU():
             title = article.find('h2').text
             link = article.find('a')['href']
             date = article.find('p').text
-            with open(f'scrapped_articles/{index}.txt', 'w') as f:
+            with open(f'scrapped_articles/MedTechEurope_{title}.txt', 'a') as f:
                 f.write("Title: " + title + "\n")
                 f.write("Link: " + link + "\n")
                 f.write("Date: " + date + "\n")
@@ -73,19 +74,26 @@ def get_article_statnews():
         articles = soup.find_all('article', class_="topic-block__preview topic-block__preview--basic plus")
         
         for index, article in enumerate(articles):
-            title = article.find('a', class_='topic-block__preview-title').text
+            title = article.find('a', class_='topic-block__preview-title').text.strip()
             link = article.find('a')['href']
             author = article.find('a', class_='author-name-link author-name author-main').text
-            with open(f'scrapped_articles/{index}.txt', 'w') as f:
+            with open(f'scrapped_articles/StatNews_{title}.txt', 'a') as f:
                     f.write("Title: " + title + "\n")
-                    f.write("Link: " + link + "\n")
+                    f.write("Link: " + link + "\n") 
                     f.write("Author: " + author + "\n")
     finally:
         driver.quit()
 
+def clear_folder(folder_path):
+    """Clears all files in the specified folder."""
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
 if __name__ == '__main__':
     while True:
+        clear_folder('./scrapped_articles')
         get_article()
         get_article_medEU()
         get_article_statnews()
