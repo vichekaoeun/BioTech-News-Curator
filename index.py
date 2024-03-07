@@ -6,11 +6,12 @@ from bs4 import BeautifulSoup
 import time
 
 driver = webdriver.Chrome()
-url = 'https://medicalfuturist.com/magazine'
-driver.get(url)
 
 def get_article():
     try:
+        url = 'https://medicalfuturist.com/magazine'
+        driver.get(url)
+        
         # Wait for the content to load (you may need to adjust the timeout)
         wait = WebDriverWait(driver, 10)
         wait.until(EC.visibility_of_element_located((By.CLASS_NAME, 'row.post-list')))
@@ -34,10 +35,32 @@ def get_article():
     finally:
         # Close the Selenium webdriver
         driver.quit()
+        
 
-if __name__ == '__main__':
-    while True:
-        get_article()
-        time_wait = 1
-        print(f"Waiting...{time_wait} minutes")
-        time.sleep(time_wait * 60)
+def get_article_medEU():
+    url = 'https://www.medtecheurope.org/news-and-events/news/'
+    driver.get(url)
+    wait = WebDriverWait(driver, 10)
+    wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.posts__list.is-loaded')))
+    
+    html_content = driver.page_source
+    soup = BeautifulSoup(html_content, 'html.parser')
+    articles = soup.find_all('div', class_='posts__list-item')
+    
+    for article in articles:
+        title = article.find('h2').text
+        link = article.find('a')['href']
+        date = article.find('p').text
+        print(title)
+        print(link)
+        print(date)
+
+
+#if __name__ == '__main__':
+#    while True:
+#        get_article_medEU()
+#        time_wait = 1
+#        print(f"Waiting...{time_wait} minutes")
+#        time.sleep(time_wait * 60)
+
+get_article_medEU()
