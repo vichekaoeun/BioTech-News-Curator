@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 import time
 import os
 import csv
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def get_article():
     try:
@@ -108,6 +111,28 @@ def export_to_csv(data, filename):
         writer.writeheader()
         for row in data:
             writer.writerow(row)
+            
+def word_cloud_gen(file):
+    # Read the CSV file containing the articles
+    df = pd.read_csv('articles.csv')
+    
+    titles = df['Title']
+    
+    text_data = ' '.join(titles)
+    
+    # Generate word cloud
+    wordcloud = WordCloud(width=800, height=800, 
+                      background_color='white', 
+                      stopwords=None, 
+                      min_font_size=10).generate(text_data)
+
+    # Visualize the word cloud
+    plt.figure(figsize=(8, 8), facecolor=None) 
+    plt.imshow(wordcloud) 
+    plt.axis("off") 
+    plt.tight_layout(pad=0) 
+
+    plt.show()
 
 if __name__ == '__main__':
     while True:
@@ -115,9 +140,9 @@ if __name__ == '__main__':
         article_data = get_article()
         article_medEU_data = get_article_medEU()
         article_statnews_data = get_article_statnews()
-
         all_data = article_data + article_medEU_data + article_statnews_data
         export_to_csv(all_data, 'articles.csv')
+        word_cloud_gen('./articles.csv')
         time_wait = 1
         print(f"Waiting...{time_wait} minutes")
         time.sleep(time_wait * 60)
