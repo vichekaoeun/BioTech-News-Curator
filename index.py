@@ -60,10 +60,35 @@ def get_article_medEU():
         driver.quit()
 
 
+def get_article_statnews():
+    try:
+        driver = webdriver.Chrome()
+        url = 'https://www.statnews.com/category/biotech/'
+        driver.get(url)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.topic-block__row')))
+        
+        html_content = driver.page_source
+        soup = BeautifulSoup(html_content, 'html.parser')
+        articles = soup.find_all('article', class_="topic-block__preview topic-block__preview--basic plus")
+        
+        for index, article in enumerate(articles):
+            title = article.find('a', class_='topic-block__preview-title').text
+            link = article.find('a')['href']
+            author = article.find('a', class_='author-name-link author-name author-main').text
+            with open(f'scrapped_articles/{index}.txt', 'w') as f:
+                    f.write("Title: " + title + "\n")
+                    f.write("Link: " + link + "\n")
+                    f.write("Author: " + author + "\n")
+    finally:
+        driver.quit()
+
+
 if __name__ == '__main__':
     while True:
         get_article()
         get_article_medEU()
+        get_article_statnews()
         time_wait = 1
         print(f"Waiting...{time_wait} minutes")
         time.sleep(time_wait * 60)
