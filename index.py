@@ -14,6 +14,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+import joblib
 
 # Srapping
 
@@ -174,6 +175,8 @@ if __name__ == '__main__':
         model = train_model(X_train, y_train)
         predicted_labels = classify_titles(X_test, model)
         print("Accuracy:", accuracy_score(y_test, predicted_labels))
+        
+        joblib.dump(model, 'trained_model.joblib')
         
         word_cloud_gen('./articles.csv')
         time_wait = 1
