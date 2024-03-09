@@ -87,7 +87,7 @@ def get_article_statnews():
         for index, article in enumerate(articles):
             title = article.find('a', class_='topic-block__preview-title').text.strip()
             link = article.find('a')['href']
-            author = article.find('a', class_='author-name-link author-name author-main').text
+            author = article.find('a', class_='author-name-link author-name author-main')
             date = 'N/A'
             article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
             print(f'File saved: {index}')
@@ -113,20 +113,17 @@ def export_to_csv(data, filename):
             writer.writerow(row)
             
 def word_cloud_gen(file):
-    # Read the CSV file containing the articles
     df = pd.read_csv('articles.csv')
     
     titles = df['Title']
     
     text_data = ' '.join(titles)
     
-    # Generate word cloud
     wordcloud = WordCloud(width=800, height=800, 
                       background_color='white', 
                       stopwords=None, 
                       min_font_size=10).generate(text_data)
 
-    # Visualize the word cloud
     plt.figure(figsize=(8, 8), facecolor=None) 
     plt.imshow(wordcloud) 
     plt.axis("off") 
