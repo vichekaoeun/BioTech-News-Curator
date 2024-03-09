@@ -87,7 +87,11 @@ def get_article_statnews():
         for index, article in enumerate(articles):
             title = article.find('a', class_='topic-block__preview-title').text.strip()
             link = article.find('a')['href']
-            author = article.find('a', class_='author-name-link author-name author-main')
+            author_element = article.find('a', class_='author-name-link author-name author-main')
+            if author_element:
+                author = author_element.text
+            else:
+                author = 'N/A'
             date = 'N/A'
             article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
             print(f'File saved: {index}')
