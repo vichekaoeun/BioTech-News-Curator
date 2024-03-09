@@ -9,6 +9,13 @@ import csv
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Srapping
 
 def get_article():
     try:
@@ -32,7 +39,8 @@ def get_article():
             link = article.find('a')['href']
             date = 'N/A'
             author = 'N/A'
-            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
+            category = 'Uncategorized'
+            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author, 'Category': category})
             print(f'File saved: {index}')
     
         return article_data
@@ -61,7 +69,8 @@ def get_article_medEU():
             link = article.find('a')['href']
             date = article.find('p').text
             author = 'N/A'
-            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
+            category = 'Uncategorized'
+            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author, 'Category': category})
             print(f'File saved: {index}')
             
         return article_data
@@ -93,7 +102,8 @@ def get_article_statnews():
             else:
                 author = 'N/A'
             date = 'N/A'
-            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author})
+            category = 'Uncategorized'
+            article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author, 'Category': category})
             print(f'File saved: {index}')
             
         return article_data
@@ -135,6 +145,21 @@ def word_cloud_gen(file):
 
     plt.show()
 
+# ML Model
+
+def load_labeled_data(filename):
+    df = pd.read_csv(filename)
+    return df['Title'], df['Category']
+
+def train_model(titles, labels):
+    model = make_pipeline(TfidfVectorizer(), MultinomialNB())
+    model.fit(titles, labels)
+    return model
+
+def classify_titles(titles, model):
+    return model.predict(titles)
+
+
 if __name__ == '__main__':
     while True:
         clear_folder('./scrapped_articles')
@@ -143,6 +168,13 @@ if __name__ == '__main__':
         article_statnews_data = get_article_statnews()
         all_data = article_data + article_medEU_data + article_statnews_data
         export_to_csv(all_data, 'articles.csv')
+        
+        titles, labels = load_labeled_data('./articles.csv')
+        X_train, X_test, y_train, y_test = train_test_split(titles, labels, test_size=0.2, random_state=42)
+        model = train_model(X_train, y_train)
+        predicted_labels = classify_titles(X_test, model)
+        print("Accuracy:", accuracy_score(y_test, predicted_labels))
+        
         word_cloud_gen('./articles.csv')
         time_wait = 1
         print(f"Waiting...{time_wait} minutes")
