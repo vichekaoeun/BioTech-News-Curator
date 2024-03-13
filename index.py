@@ -9,6 +9,7 @@ import csv
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import pandas as pd
+from database import insert_articles_to_db, show_articles_from_db
 
 # Srapping
 
@@ -37,6 +38,7 @@ def get_article():
             category = 'Uncategorized'
             article_data.append({'Title': title, 'Link': link, 'Date': date, 'Author': author, 'Category': category})
             print(f'File saved: {index}')
+            
     
         return article_data
     
@@ -147,6 +149,10 @@ if __name__ == '__main__':
         article_data = get_article()
         article_medEU_data = get_article_medEU()
         article_statnews_data = get_article_statnews()
+        insert_articles_to_db(article_data)
+        insert_articles_to_db(article_medEU_data)
+        insert_articles_to_db(article_statnews_data)
+        show_articles_from_db()
         all_data = article_data + article_medEU_data + article_statnews_data
         export_to_csv(all_data, 'articles.csv')
         
